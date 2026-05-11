@@ -2,13 +2,13 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Controle ESP32</title>
+  <title>ESP32 MQTT HiveMQ</title>
 
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
   <style>
     body{
-      background:#111;
+      background:#121212;
       color:white;
       font-family:Arial;
       display:flex;
@@ -24,10 +24,10 @@
     button{
       width:200px;
       height:60px;
-      font-size:20px;
       margin:10px;
       border:none;
       border-radius:10px;
+      font-size:20px;
       cursor:pointer;
     }
 
@@ -46,7 +46,7 @@
 
 <div class="box">
 
-  <h1>ESP32 MQTT</h1>
+  <h1>Controle ESP32</h1>
 
   <button class="on" onclick="ligar()">
     LIGAR
@@ -56,29 +56,51 @@
     DESLIGAR
   </button>
 
-  <h3 id="status">Conectando...</h3>
+  <h3 id="status">
+    Conectando...
+  </h3>
 
 </div>
 
 <script>
 
+const options = {
+
+  connectTimeout: 4000,
+
+  clientId:
+    'web_' +
+    Math.random().toString(16).substr(2, 8),
+
+  clean: true
+};
+
 const client = mqtt.connect(
-  'wss://test.mosquitto.org:8081'
+  'wss://broker.hivemq.com:8884/mqtt',
+  options
 );
 
-client.on('connect', () => {
+client.on('connect', function () {
 
-  console.log("MQTT conectado");
+  console.log('Conectado');
 
   document.getElementById("status")
     .innerText = "MQTT CONECTADO";
 });
 
+client.on('error', function (err) {
+
+  console.log(err);
+
+  document.getElementById("status")
+    .innerText = "ERRO MQTT";
+});
+
 function ligar(){
 
   client.publish(
-    "esp32/led",
-    "ON"
+    'esp32/led',
+    'ON'
   );
 
   console.log("ON enviado");
@@ -87,8 +109,8 @@ function ligar(){
 function desligar(){
 
   client.publish(
-    "esp32/led",
-    "OFF"
+    'esp32/led',
+    'OFF'
   );
 
   console.log("OFF enviado");
