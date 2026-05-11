@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>ESP32 DHT11 MQTT</title>
+<title>ESP32 MQTT</title>
 
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
@@ -25,7 +25,7 @@ body{
     background:#1e1e1e;
     padding:30px;
     border-radius:15px;
-    width:320px;
+    width:350px;
     text-align:center;
     box-shadow:0 0 20px rgba(0,0,0,0.5);
 }
@@ -33,6 +33,26 @@ body{
 .valor{
     font-size:40px;
     margin-bottom:20px;
+}
+
+button{
+    width:140px;
+    height:55px;
+    border:none;
+    border-radius:10px;
+    font-size:18px;
+    cursor:pointer;
+    margin:10px;
+}
+
+.on{
+    background:#00c853;
+    color:white;
+}
+
+.off{
+    background:#d50000;
+    color:white;
 }
 
 .status{
@@ -54,17 +74,31 @@ body{
 
 <div class="box">
 
-    <h1>ESP32 DHT11</h1>
+    <h1>ESP32 MQTT</h1>
 
     <h2>Temperatura</h2>
+
     <div class="valor" id="temp">
         -- °C
     </div>
 
     <h2>Umidade</h2>
+
     <div class="valor" id="umi">
         -- %
     </div>
+
+    <hr>
+
+    <h2>Controle do LED</h2>
+
+    <button class="on" onclick="ligarLed()">
+        LIGAR
+    </button>
+
+    <button class="off" onclick="desligarLed()">
+        DESLIGAR
+    </button>
 
     <div class="status offline" id="status">
         DESCONECTADO MQTT
@@ -102,13 +136,12 @@ client.on('connect', () => {
     statusDiv.classList.remove("offline");
     statusDiv.classList.add("online");
 
+    // Tópicos do DHT11
     client.subscribe("esp32/temperatura");
     client.subscribe("esp32/umidade");
 });
 
 client.on('reconnect', () => {
-
-    console.log("Reconectando...");
 
     statusDiv.innerText =
         "RECONECTANDO MQTT";
@@ -118,8 +151,6 @@ client.on('reconnect', () => {
 });
 
 client.on('offline', () => {
-
-    console.log("Offline");
 
     statusDiv.innerText =
         "MQTT OFFLINE";
@@ -157,6 +188,28 @@ client.on('message', (topic, message) => {
             .innerText = valor + " %";
     }
 });
+
+// BOTÕES DO LED
+
+function ligarLed(){
+
+    client.publish(
+        "esp32/led",
+        "ON"
+    );
+
+    console.log("LED ON");
+}
+
+function desligarLed(){
+
+    client.publish(
+        "esp32/led",
+        "OFF"
+    );
+
+    console.log("LED OFF");
+}
 
 </script>
 
