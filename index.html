@@ -1,120 +1,87 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>ESP32 MQTT HiveMQ</title>
+<meta charset="UTF-8">
+<title>Monitor ESP32</title>
 
-  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
-  <style>
-    body{
-      background:#121212;
-      color:white;
-      font-family:Arial;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      height:100vh;
-    }
+<style>
 
-    .box{
-      text-align:center;
-    }
+body{
+  background:#121212;
+  color:white;
+  font-family:Arial;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
 
-    button{
-      width:200px;
-      height:60px;
-      margin:10px;
-      border:none;
-      border-radius:10px;
-      font-size:20px;
-      cursor:pointer;
-    }
+.box{
+  background:#1e1e1e;
+  padding:30px;
+  border-radius:15px;
+  text-align:center;
+  width:300px;
+}
 
-    .on{
-      background:green;
-      color:white;
-    }
+.valor{
+  font-size:40px;
+  margin:20px 0;
+}
 
-    .off{
-      background:red;
-      color:white;
-    }
-  </style>
+</style>
+
 </head>
 <body>
 
 <div class="box">
 
-  <h1>Controle ESP32</h1>
+  <h1>ESP32 DHT11</h1>
 
-  <button class="on" onclick="ligar()">
-    LIGAR
-  </button>
+  <h2>Temperatura</h2>
+  <div class="valor" id="temp">
+    -- °C
+  </div>
 
-  <button class="off" onclick="desligar()">
-    DESLIGAR
-  </button>
-
-  <h3 id="status">
-    Conectando...
-  </h3>
+  <h2>Umidade</h2>
+  <div class="valor" id="umi">
+    -- %
+  </div>
 
 </div>
 
 <script>
 
-const options = {
-
-  connectTimeout: 4000,
-
-  clientId:
-    'web_' +
-    Math.random().toString(16).substr(2, 8),
-
-  clean: true
-};
-
 const client = mqtt.connect(
-  'wss://broker.hivemq.com:8884/mqtt',
-  options
+  'ws://broker.hivemq.com:8884/mqtt'
 );
 
-client.on('connect', function () {
+client.on('connect', () => {
 
-  console.log('Conectado');
+  console.log("MQTT conectado");
 
-  document.getElementById("status")
-    .innerText = "MQTT CONECTADO";
+  client.subscribe("esp32/temperatura");
+  client.subscribe("esp32/umidade");
 });
 
-client.on('error', function (err) {
+client.on('message', (topic, message) => {
 
-  console.log(err);
+  const valor = message.toString();
 
-  document.getElementById("status")
-    .innerText = "ERRO MQTT";
+  if(topic == "esp32/temperatura"){
+
+    document.getElementById("temp")
+      .innerText = valor + " °C";
+  }
+
+  if(topic == "esp32/umidade"){
+
+    document.getElementById("umi")
+      .innerText = valor + " %";
+  }
 });
-
-function ligar(){
-
-  client.publish(
-    'esp32/led',
-    'ON'
-  );
-
-  console.log("ON enviado");
-}
-
-function desligar(){
-
-  client.publish(
-    'esp32/led',
-    'OFF'
-  );
-
-  console.log("OFF enviado");
-}
 
 </script>
 
